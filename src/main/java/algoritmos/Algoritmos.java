@@ -17,7 +17,7 @@ public class Algoritmos<T> {
     private final Distancia distancia = new Distancia();
     private final Ordenamiento orden = new Ordenamiento();
     private final Visita visita = new Visita();
-    private final ArbolExpansionMinima arbol = new ArbolExpansionMinima();
+    private final ArbolExpansionMinima<T> arbol = new ArbolExpansionMinima();
     
      /**
      * Visita y colorea los vértices por capas, iniciando por un nodo s
@@ -97,9 +97,9 @@ public class Algoritmos<T> {
         distancia.dijkstra(grafo, s);
     }
     
-    public void kruskal(IGrafo<T> grafo) {
+    public IGrafo<T> kruskal(IGrafo<T> grafo) {
         restablecerGrafo(grafo);
-        arbol.kruskal(grafo);
+        return arbol.kruskal(grafo);
     }
     
     public void prim(IGrafo<T> grafo, Vertice<T> s) {

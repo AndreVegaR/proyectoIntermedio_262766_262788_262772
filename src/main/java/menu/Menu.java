@@ -53,8 +53,8 @@ public class Menu {
         "Tiempo mínimo entre dos puertos (SH))",
         "Ruta crítica entre dos puertos (LO)",
         "Qué tan rápido se puede llegar de un puerto a los demás (Dijkstra)",
-        "lol (Prim)",
-        "xd (Kruskal)",
+        "Prim",
+        "Kruskal",
         "Salir del sistema"
     };
     
@@ -500,11 +500,11 @@ public class Menu {
     
     /** Gestiona la ejecución de Kruskal*/
     private void gestionarKruskal() {
-        if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
+        if (!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
             throw new GrafoException("No hay puertos");
         }
-        algoritmos.kruskal(grafo);
-        imprimirArbol(grafo);
+        IGrafo<String> arbol = algoritmos.kruskal(grafo);
+        imprimirArbolKruskal(arbol);
     }
     
     
@@ -767,5 +767,22 @@ public class Menu {
         } else {
             System.out.println("Costo total: " + total);
         }
+    }
+    
+    /** Imprime los tramos y el costo total del árbol obtenido por Kruskal */
+    private void imprimirArbolKruskal(IGrafo<String> arbol) {
+        System.out.println("\nÁrbol de expansión mínima (Kruskal):");
+        int total = 0;
+
+        for (Vertice<String> u : arbol.obtenerVertices()) {
+            for (Vertice<String> v : arbol.obtenerAdyacentes(u)) {
+                if (u.getIndice() < v.getIndice()) {
+                    int peso = arbol.obtenerPonderacion(u, v);
+                    System.out.println(u + " - " + v + " (" + peso + " días)");
+                    total += peso;
+                }
+            }
+        }
+        System.out.println("Costo total: " + total);
     }
 }
