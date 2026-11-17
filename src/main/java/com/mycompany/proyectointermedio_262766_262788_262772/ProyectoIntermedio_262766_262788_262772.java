@@ -4,6 +4,8 @@
 
 package com.mycompany.proyectointermedio_262766_262788_262772;
 
+import menu.Menu;
+
 /**
  *
  * @author Andre
@@ -11,6 +13,7 @@ package com.mycompany.proyectointermedio_262766_262788_262772;
 public class ProyectoIntermedio_262766_262788_262772 {
 
     public static void main(String[] args) {
-        System.out.println("Hello World!");
+        Menu menu = new Menu();
+        menu.iniciar();
     }
 }

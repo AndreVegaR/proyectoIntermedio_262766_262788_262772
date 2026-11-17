@@ -747,9 +747,25 @@ public class Menu {
         Collections.reverse(pasos);
         return String.join(" -> ", pasos);
     }
-    
-    
+
+
     private void imprimirArbol(IGrafo<String> grafo) {
-        
+        System.out.println("\nÁrbol de expansión mínima:");
+        int total = 0;
+        boolean hayTramos = false;
+
+        for (Vertice<String> v : grafo.obtenerVertices()) {
+            if (v.getPadre() != null) {
+                System.out.println(v.getPadre() + " - " + v + " (" + v.getDistancia() + " días)");
+                total += v.getDistancia();
+                hayTramos = true;
+            }
+        }
+
+        if (!hayTramos) {
+            System.out.println("El puerto inicial no tiene tramos hacia otros puertos");
+        } else {
+            System.out.println("Costo total: " + total);
+        }
     }
 }
