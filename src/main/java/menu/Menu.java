@@ -36,23 +36,25 @@ public class Menu {
 
     // Textos de las opciones del menú principal, en el mismo orden en que se numeran
     private final String[] opciones = {
-        "Crear grafo",
-        "Insertar vértice",
-        "Eliminar vértice",
-        "Insertar arista",
-        "Eliminar arista",
-        "Imprimir conjunto de vértices adyacentes de un vértice",
-        "Imprimir matriz de adyacencia del grafo",
-        "Imprimir número de vértices",
-        "Imprimir número de aristas",
-        "[GRAFO PONDERADO] Establecer y actualizar ponderación de arista",
-        "[GRAFO DIRIGIDO] Imprimir grado de entrada y salida de un vértice",
-        "Aplicar algoritmo Búsqueda por anchura (BFS)",
+        "Crear red de puertos",
+        "Insertar puerto",
+        "Eliminar puerto",
+        "Insertar tramo",
+        "Eliminar tramo",
+        "Imprimir conjunto de puertos adyacentes de otro puerto",
+        "Imprimir adyacencias entre puertos",
+        "Imprimir número de puertos",
+        "Imprimir número de tramos",
+        "[GRAFO PONDERADO] Establecer y actualizar tiempo de tramo",
+        "[GRAFO DIRIGIDO] Imprimir grado de entrada y salida de un puerto",
+        "Consultar niveles de escalas entre puertos (BFS)",
         "Aplicar algoritmo Búsqueda por profundidad (DFS)",
-        "[DAG] Aplicar algoritmo Orden topológico",
-        "[DAG] Aplicar algoritmo Caminos más cortos",
-        "[DAG] Aplicar algoritmo Caminos más largos",
-        "Aplicar algoritmo Dijkstra",
+        "Secuencia para visitar puertos (Orden topológico)",
+        "Tiempo mínimo entre dos puertos (SH))",
+        "Ruta crítica entre dos puertos (LO)",
+        "Qué tan rápido se puede llegar de un puerto a los demás (Dijkstra)",
+        "lol (Prim)",
+        "xd (Kruskal)",
         "Salir del sistema"
     };
     
@@ -87,6 +89,8 @@ public class Menu {
             () -> gestionarCaminosCortos(),
             () -> gestionarCaminosLargos(),
             () -> gestionarDijkstra(),
+            () -> gestionarPrim(),
+            () -> gestionarKruskal(),
             () -> gestionarSalir()
         };
 
@@ -104,7 +108,7 @@ public class Menu {
      */
     public void iniciar() {
         // Da la bienvenida al usuario
-        System.out.println("Bienvenido al Sistema de Grafos");
+        System.out.println("Bienvenido al sistema de puertos marítimos");
 
         // Mantiene el menú principal hasta que se detenga la ejecución
         while (ejecutando) {
@@ -140,8 +144,8 @@ public class Menu {
     private void gestionarCrearGrafo() {
         // Si ya existe un grafo, exige confirmar su eliminación y sustitución
         if (existeGrafo()) {
-            System.out.println("Ya existe un grafo en el sistema");
-            System.out.println("Si crea uno nuevo, el grafo actual y todos sus datos serán eliminados");
+            System.out.println("Ya existe una red dep puertos");
+            System.out.println("Si crea una nueva, la actual será borrada y todos sus datos serán eliminados");
             if (!confirmar()) {
                 System.out.println("Operación cancelada");
                 return;
@@ -168,7 +172,7 @@ public class Menu {
         // Sustituye el grafo anterior solo si se eligió un tipo, y regresa al menú principal para no saltarse la confirmación
         if (nuevoGrafo != null) {
             this.grafo = nuevoGrafo;
-            System.out.println("Grafo creado exitosamente");
+            System.out.println("Red creada exitosamente");
         }
     }
 
@@ -178,26 +182,26 @@ public class Menu {
     private void gestionarInsertarVertice() throws GrafoException {
         // Verifica que exista un grafo
         if (!existeGrafo()) {
-            throw new GrafoException("Primero debe crear un grafo (opción 1)");
+            throw new GrafoException("Primero debe crear una red (opción 1)");
         }
 
         // Pide el nombre del nuevo vértice
-        System.out.print("Ingrese el nombre del nuevo vértice: ");
+        System.out.print("Ingrese el nombre del nuevo puerto: ");
         String nombre = leerLinea();
 
         // Valida que el nombre no esté vacío ni repetido
         if (nombre.isEmpty()) {
-            throw new GrafoException("Error: El nombre del vértice no puede estar vacío");
+            throw new GrafoException("Error: El nombre del puerto no puede estar vacío");
         }
         for (Vertice<String> vertice : this.grafo.obtenerVertices()) {
             if (vertice.getDato().equals(nombre)) {
-                throw new GrafoException("Error: Ya existe un vértice con ese nombre");
+                throw new GrafoException("Error: Ya existe un puerto con ese nombre");
             }
         }
 
         // Inserta el vértice
         this.grafo.insertarVertice(new Vertice<>(nombre));
-        System.out.println("Vértice insertado exitosamente");
+        System.out.println("Puerto insertado exitosamente");
     }
 
 
@@ -209,18 +213,13 @@ public class Menu {
 
         // Muestra los vértices y pide el número del que se eliminará
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice: ");
+        System.out.print("Ingrese el número del puerto: ");
 
         // Elimina el vértice
         this.grafo.eliminarVertice(buscarVertice(leerLinea()));
-        System.out.println("Vértice eliminado exitosamente");
+        System.out.println("Puerto eliminado exitosamente");
     }
     
-    
-   
-    
-    
-
 
 
     /** Gestiona la inserción de una arista, pidiendo la ponderación solo si el grafo es ponderado */
@@ -230,26 +229,26 @@ public class Menu {
 
         // Muestra los vértices y pide los números de los que conecta la arista
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice de origen: ");
+        System.out.print("Ingrese el número del puerto de origen: ");
         String origen = leerLinea();
-        System.out.print("Ingrese el número del vértice de destino: ");
+        System.out.print("Ingrese el número del puerto de destino: ");
         String destino = leerLinea();
 
         // Busca ambos vértices y evita sobrescribir una arista que ya existe
         Vertice<String> nodoOrigen = buscarVertice(origen);
         Vertice<String> nodoDestino = buscarVertice(destino);
         if (this.grafo.obtenerAdyacentes(nodoOrigen).contains(nodoDestino)) {
-            throw new GrafoException("Error: La arista ya existe en el grafo");
+            throw new GrafoException("Error: El tramo ya existe");
         }
 
         // Inserta la arista, pidiendo la ponderación únicamente si el grafo es ponderado
         if (this.grafo.esPonderado()) {
-            System.out.print("Ingrese la ponderación de la arista (distinta de cero): ");
+            System.out.print("Ingrese los días del tramo (distinta de cero): ");
             this.grafo.insertarArista(nodoOrigen, nodoDestino, parsearPeso(leerLinea()));
         } else {
             this.grafo.insertarArista(nodoOrigen, nodoDestino);
         }
-        System.out.println("Arista insertada exitosamente");
+        System.out.println("Tramo insertado exitosamente");
     }
     
     
@@ -261,21 +260,21 @@ public class Menu {
 
         // Muestra los vértices y pide los números de los que conecta la arista
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice de origen: ");
+        System.out.print("Ingrese el número del puerto de origen: ");
         String origen = leerLinea();
-        System.out.print("Ingrese el número del vértice de destino: ");
+        System.out.print("Ingrese el número del puerto de destino: ");
         String destino = leerLinea();
 
         // Busca ambos vértices y verifica que la arista exista antes de eliminarla
         Vertice<String> nodoOrigen = buscarVertice(origen);
         Vertice<String> nodoDestino = buscarVertice(destino);
         if (!this.grafo.obtenerAdyacentes(nodoOrigen).contains(nodoDestino)) {
-            throw new GrafoException("Error: La arista no existe en el grafo");
+            throw new GrafoException("Error: No existe ese tramo");
         }
 
         // Elimina la arista
         this.grafo.eliminarArista(nodoOrigen, nodoDestino);
-        System.out.println("Arista eliminada exitosamente");
+        System.out.println("Tramo eliminado exitosamente");
     }
 
 
@@ -287,7 +286,7 @@ public class Menu {
 
         // Muestra los vértices y pide el número del que se consultará
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice: ");
+        System.out.print("Ingrese el número del puerto: ");
 
         // Imprime sus adyacentes
         this.grafo.imprimirAdyacentes(buscarVertice(leerLinea()));
@@ -298,7 +297,7 @@ public class Menu {
     /** Gestiona la impresión de la matriz de adyacencia */
     private void gestionarMatriz() throws GrafoException {
         if (!existeGrafo()) {
-            throw new GrafoException("Primero debe crear un grafo (opción 1)");
+            throw new GrafoException("Primero debe crear una red (opción 1)");
         }
         this.grafo.imprimirMatrizAdyacencia();
     }
@@ -308,9 +307,9 @@ public class Menu {
     /** Gestiona la impresión del número de vértices */
     private void gestionarNumeroVertices() throws GrafoException {
         if (!existeGrafo()) {
-            throw new GrafoException("Primero debe crear un grafo (opción 1)");
+            throw new GrafoException("Primero debe crear una red (opción 1)");
         }
-        System.out.println("Número de vértices: " + this.grafo.obtenerNumeroVertices());
+        System.out.println("Número de puertos: " + this.grafo.obtenerNumeroVertices());
     }
 
 
@@ -318,9 +317,9 @@ public class Menu {
     /** Gestiona la impresión del número de aristas */
     private void gestionarNumeroAristas() throws GrafoException {
         if (!existeGrafo()) {
-            throw new GrafoException("Primero debe crear un grafo (opción 1)");
+            throw new GrafoException("Primero debe crear una red (opción 1)");
         }
-        System.out.println("Número de aristas: " + this.grafo.obtenerNumeroAristas());
+        System.out.println("Número de conexiones: " + this.grafo.obtenerNumeroAristas());
     }
 
 
@@ -335,22 +334,22 @@ public class Menu {
 
         // Muestra los vértices y pide los números de los que conecta la arista
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice de origen: ");
+        System.out.print("Ingrese el número del puerto de origen: ");
         String origen = leerLinea();
-        System.out.print("Ingrese el número del vértice de destino: ");
+        System.out.print("Ingrese el número del puerto de destino: ");
         String destino = leerLinea();
 
         // Busca ambos vértices y verifica que la arista exista
         Vertice<String> nodoOrigen = buscarVertice(origen);
         Vertice<String> nodoDestino = buscarVertice(destino);
         if (!this.grafo.obtenerAdyacentes(nodoOrigen).contains(nodoDestino)) {
-            throw new GrafoException("Error: La arista no existe en el grafo");
+            throw new GrafoException("Error: No existe ese tramo");
         }
 
         // Pide la nueva ponderación y la aplica
-        System.out.print("Ingrese la ponderación de la arista (distinta de cero): ");
+        System.out.print("Ingrese la cantidad de días (distinta de cero): ");
         this.grafo.establecerPonderacionArista(nodoOrigen, nodoDestino, parsearPeso(leerLinea()));
-        System.out.println("Ponderación actualizada exitosamente");
+        System.out.println("Días actualizados exitosamente");
     }
 
 
@@ -359,13 +358,13 @@ public class Menu {
     private void gestionarGrados() throws GrafoException {
         // Verifica que el grafo sea dirigido, y si no existe grafo lo avisa validarVertices
         if (existeGrafo() && !this.grafo.esDirigido()) {
-            throw new GrafoException("Error: Esta opción solo está disponible en grafos dirigidos");
+            throw new GrafoException("Error: Esta opción solo está disponible en redes dirigidas");
         }
         validarVertices();
 
         // Muestra los vértices y pide el número del que se consultará
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice: ");
+        System.out.print("Ingrese el número del puerto inicial: ");
 
         // Imprime sus grados
         this.grafo.imprimirGradosVertice(buscarVertice(leerLinea()));
@@ -376,12 +375,12 @@ public class Menu {
     /** Gestiona la ejecución del algoritmo Búsqueda por anchura */
     private void gestionarAlgoritmoBFS() {
         if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
-            throw new GrafoException("El grafo está vacío");
+            throw new GrafoException("No hay puertos");
         }
 
         // Pide el número del vértice raíz para el algoritmo
         imprimirVertices();
-        System.out.println("Ingrese el número del vértice raíz");
+        System.out.println("Ingrese el número del puerto inicial");
         String vertice = leerLinea();
         
         // Ejecuta el algoritmo
@@ -393,7 +392,7 @@ public class Menu {
         verticesOrdenados.sort(Comparator.comparingInt(Vertice::getDistancia));
         
         // Imprime los resultados del algoritmo en orden
-        System.out.println("Vértices por capas (-1 significa no explorado):");
+        System.out.println("Puertos por capas:");
         for (Vertice<String> v: verticesOrdenados) {
             System.out.println(v.getDato() + ": distancia de " + v.getDistancia());
         }
@@ -404,7 +403,7 @@ public class Menu {
     /** Gestiona la ejecución del algoritmo Búsqueda por profundidad */
     private void gestionarAlgoritmoDFS() {
         if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
-            throw new GrafoException("El grafo está vacío");
+            throw new GrafoException("No hay puertos");
         }
 
         // Ejecuta el algoritmo
@@ -415,7 +414,7 @@ public class Menu {
         verticesOrdenados.sort(Comparator.comparingInt(Vertice::getDescubrimiento));
         
         // Imprime el descubrimiento y finalización de cada vértice (n / m) en orden
-        System.out.println("Vértices por orden de descubrimiento:");
+        System.out.println("Puertos por orden de descubrimiento:");
         for (Vertice<String> v: verticesOrdenados) {
             String tiempoVertice = v.getDescubrimiento() + " / " + v.getFinalizacion();
             System.out.println(v.getDato() + ": " + tiempoVertice);
@@ -427,7 +426,7 @@ public class Menu {
     /** Gestiona la implementación de la búsqueda topológica en el grafo*/
     private void gestionarBusquedaTopologica() {
         if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
-            throw new GrafoException("El grafo está vacío");
+            throw new GrafoException("No hay puertos");
         }
         imprimirListaVertices(algoritmos.ordenamientoTopologico(grafo));
     }
@@ -435,14 +434,14 @@ public class Menu {
     
     
     /** Gestiona la ejecución de caminos más cortos */
-    public void gestionarCaminosCortos() {
+    private void gestionarCaminosCortos() {
         if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
-            throw new GrafoException("El grafo está vacío");
+            throw new GrafoException("No hay puertos");
         }
         
         // Muestra los vértices y pide el vértice raíz
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice raíz: ");
+        System.out.print("Ingrese el número del puerto inicial: ");
         Vertice<String> raiz = buscarVertice(leerLinea());
 
         // Ejecuta el algoritmo
@@ -453,14 +452,14 @@ public class Menu {
     
     
     /** Gestiona la ejecución de caminos más largos */
-    public void gestionarCaminosLargos() {
+    private void gestionarCaminosLargos() {
         if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
-            throw new GrafoException("El grafo está vacío");
+            throw new GrafoException("No hay puertos");
         }
         
         // Muestra los vértices y pide el vértice raíz
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice raíz: ");
+        System.out.print("Ingrese el número del puerto inicial: ");
         Vertice<String> raiz = buscarVertice(leerLinea());
 
         // Ejecuta el algoritmo
@@ -471,19 +470,41 @@ public class Menu {
     
     
     /** Gestiona la ejecución de Dijkstra */
-    public void gestionarDijkstra() {
+    private void gestionarDijkstra() {
         if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
-            throw new GrafoException("El grafo está vacío");
+            throw new GrafoException("No hay puertos");
         }
         
         // Muestra los vértices y pide el vértice raíz
         imprimirVertices();
-        System.out.print("Ingrese el número del vértice raíz: ");
+        System.out.print("Ingrese el número del puerto inicial: ");
         Vertice<String> raiz = buscarVertice(leerLinea());
 
         // Ejecuta el algoritmo
         algoritmos.dijkstra(grafo, raiz);
         mostrarResultadosDistancia(grafo, raiz, false);
+    }
+    
+    
+    
+    /** Gestiona la ejecución de Prim */
+    private void gestionarPrim() {
+        if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
+            throw new GrafoException("No hay puertos");
+        }
+        algoritmos.prim(grafo, pedirVertice());
+        imprimirArbol(grafo);
+    }
+    
+    
+    
+    /** Gestiona la ejecución de Kruskal*/
+    private void gestionarKruskal() {
+        if(!existeGrafo() || grafo.obtenerVertices().isEmpty()) {
+            throw new GrafoException("No hay puertos");
+        }
+        algoritmos.kruskal(grafo);
+        imprimirArbol(grafo);
     }
     
     
@@ -516,10 +537,10 @@ public class Menu {
      */
     private void validarVertices() throws GrafoException {
         if (!existeGrafo()) {
-            throw new GrafoException("Primero debe crear un grafo (opción 1)");
+            throw new GrafoException("Primero debe crear la red de puertos(opción 1)");
         }
         if (this.grafo.obtenerNumeroVertices() == 0) {
-            throw new GrafoException("El grafo no tiene vértices, inserte alguno primero (opción 2)");
+            throw new GrafoException("No hay puertos, inserte alguno primero (opción 2)");
         }
     }
 
@@ -537,8 +558,21 @@ public class Menu {
         try {
             return this.grafo.obtenerVertices().get(Integer.parseInt(numero) - 1);
         } catch (NumberFormatException | IndexOutOfBoundsException e) {
-            throw new GrafoException("Error: Debe ingresar el número de uno de los vértices de la lista");
+            throw new GrafoException("Error: Debe ingresar el número de uno de los puertos de la lista");
         }
+    }
+    
+    
+    
+    /**
+     * Centraliza la lógica de pedir, imprimir la lista de vértices y seleccionarlo
+     * 
+     * @return el vértice encontrado
+     */
+    private Vertice<String> pedirVertice() {
+        imprimirVertices();
+        System.out.print("Ingrese el número del puerto inicial: ");
+        return buscarVertice(leerLinea());
     }
 
 
@@ -562,7 +596,7 @@ public class Menu {
         } catch (NumberFormatException e) {
 
         }
-        throw new GrafoException("Error: La ponderación debe ser un número distinto de cero");
+        throw new GrafoException("Error: La cantidad de días debe ser un número distinto de cero");
     }
     
     
@@ -622,14 +656,14 @@ public class Menu {
         int longitud = opciones.length-1;
         for (int i = 0; i <= longitud; i++) {
             switch (i) {
-                case 0  -> System.out.println("====GRAFO====");
-                case 1  -> System.out.println("====VÉRTICES====");
-                case 3  -> System.out.println("====ARISTAS====");
+                case 0  -> System.out.println("====RED====");
+                case 1  -> System.out.println("====PUERTOS====");
+                case 3  -> System.out.println("====TRAMOS====");
                 case 5  -> System.out.println("====IMPRESIONES====");
                 case 9  -> System.out.println("====ESPECIALES====");
-                case 11 -> System.out.println("====ALGORITMOS DE VISITA====");
-                case 13 -> System.out.println("====ALGORITMOS DE ORDENAMIENTO====");
-                case 14 -> System.out.println("====ALGORITMOS DE DISTANCIA====");
+                case 11 -> System.out.println("====VISITA====");
+                case 13 -> System.out.println("====ORDENAMIENTO====");
+                case 14 -> System.out.println("====DISTANCIA====");
                 default -> {
                     if (i == longitud) {
                         System.out.println("====SISTEMA====");
@@ -645,10 +679,10 @@ public class Menu {
     /** Imprime las opciones del submenú para elegir el tipo de grafo */
     private void imprimirMenuGrafo() {
         System.out.println();
-        System.out.println("1. Grafo no dirigido no ponderado");
-        System.out.println("2. Grafo no dirigido ponderado");
-        System.out.println("3. Grafo dirigido no ponderado");
-        System.out.println("4. Grafo dirigido ponderado");
+        System.out.println("1. Red no dirigida sin días entre tramos especificados");
+        System.out.println("2. Red no dirigida con días entre tramos especificados");
+        System.out.println("3. Red dirigida sin días entre tramos especificados");
+        System.out.println("4. Red dirigida con días entre tramos especificados");
         System.out.println("0. Regresar");
     }
 
@@ -661,7 +695,7 @@ public class Menu {
     private void imprimirVertices() {
         // Imprime el encabezado de la lista
         System.out.println();
-        System.out.println("Vértices del grafo:");
+        System.out.println("Puertos dentro de la red:");
         imprimirListaVertices(grafo.obtenerVertices());
         
     }
@@ -712,5 +746,10 @@ public class Menu {
 
         Collections.reverse(pasos);
         return String.join(" -> ", pasos);
+    }
+    
+    
+    private void imprimirArbol(IGrafo<String> grafo) {
+        
     }
 }
